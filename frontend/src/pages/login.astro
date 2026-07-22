@@ -1,0 +1,43 @@
+---
+import Layout from "../layouts/layout.astro";
+---
+
+<Layout title="Login">
+  <div style="max-width: 400px; margin: 100px auto; font-family: sans-serif;">
+    <h1>Login</h1>
+    <div id="login-root"></div>
+  </div>
+</Layout>
+
+<script>
+  import { login } from "../lib/api";
+
+  const root = document.getElementById("login-root")!;
+  root.innerHTML = `
+    <form id="login-form" style="display: flex; flex-direction: column; gap: 8px;">
+      <input type="email" id="email" placeholder="Email" required style="padding: 8px;" />
+      <input type="password" id="password" placeholder="Password" required style="padding: 8px;" />
+      <button type="submit" style="padding: 8px;">Login</button>
+      <p id="error-msg" style="color: red;"></p>
+    </form>
+  `;
+
+  const form = document.getElementById("login-form") as HTMLFormElement;
+  const errorMsg = document.getElementById("error-msg")!;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorMsg.textContent = "";
+
+    const email = (document.getElementById("email") as HTMLInputElement).value;
+    const password = (document.getElementById("password") as HTMLInputElement).value;
+
+    try {
+      const { token } = await login(email, password);
+      localStorage.setItem("token", token);
+      window.location.href = "/";
+    } catch (err) {
+      errorMsg.textContent = err instanceof Error ? err.message : "Login failed";
+    }
+  });
+</script>
