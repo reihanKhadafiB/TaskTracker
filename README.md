@@ -60,9 +60,10 @@ Create a `.env` file in the root directory and configure the following variables
 
 ```ini
 PORT=8080
-DATABASE_URL=postgres://postgres:password@localhost:5432/tasktracker?sslmode=disable
+DATABASE_URL=postgres://user:password@localhost:5432/tasktracker?sslmode=disable
 JWT_SECRET=your_super_secret_jwt_key
 PUBLIC_API_BASE_URL=http://localhost:8080
+FRONTEND_URL=http://localhost:4321
 ```
 
 ### 4. Create an Initial User (Seeder)
