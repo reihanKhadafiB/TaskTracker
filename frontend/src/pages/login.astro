@@ -3,24 +3,31 @@ import Layout from "../layouts/layout.astro";
 ---
 
 <Layout title="Login">
-  <div style="max-width: 400px; margin: 100px auto; font-family: sans-serif;">
-    <h1>Login</h1>
-    <div id="login-root"></div>
+  <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: var(--bg-color);">
+    <div class="google-form-card" style="width: 100%; max-width: 400px; margin: 2rem;">
+      <h1 style="text-align: center; margin-bottom: 0.5rem; color: var(--text-dark); font-size: 1.5rem;">Task Tracker</h1>
+      <p style="text-align: center; color: var(--text-muted); margin-bottom: 1rem;">Silakan login untuk melanjutkan</p>
+      
+      <form id="login-form" style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="email" style="font-size: 0.9rem; font-weight: 500; color: var(--text-dark);">Email</label>
+          <input type="email" id="email" placeholder="contoh@email.com" required style="width: 100%; border: 1px solid var(--surface-border); border-radius: var(--radius-sm); padding: 10px 12px; outline: none; transition: border-color 0.2s;" />
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="password" style="font-size: 0.9rem; font-weight: 500; color: var(--text-dark);">Password</label>
+          <input type="password" id="password" placeholder="Masukkan password" required style="width: 100%; border: 1px solid var(--surface-border); border-radius: var(--radius-sm); padding: 10px 12px; outline: none; transition: border-color 0.2s;" />
+        </div>
+
+        <button type="submit" class="btn primary" style="width: 100%; padding: 12px; margin-top: 8px; font-size: 1rem;">Login</button>
+        <p id="error-msg" style="color: var(--danger); text-align: center; font-size: 0.9rem; margin-top: 8px; min-height: 20px;"></p>
+      </form>
+    </div>
   </div>
 </Layout>
 
 <script>
   import { login } from "../lib/api";
-
-  const root = document.getElementById("login-root")!;
-  root.innerHTML = `
-    <form id="login-form" style="display: flex; flex-direction: column; gap: 8px;">
-      <input type="email" id="email" placeholder="Email" required style="padding: 8px;" />
-      <input type="password" id="password" placeholder="Password" required style="padding: 8px;" />
-      <button type="submit" style="padding: 8px;">Login</button>
-      <p id="error-msg" style="color: red;"></p>
-    </form>
-  `;
 
   const form = document.getElementById("login-form") as HTMLFormElement;
   const errorMsg = document.getElementById("error-msg")!;
@@ -31,6 +38,11 @@ import Layout from "../layouts/layout.astro";
 
     const email = (document.getElementById("email") as HTMLInputElement).value;
     const password = (document.getElementById("password") as HTMLInputElement).value;
+    const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    
+    const originalText = btn.textContent;
+    btn.textContent = "Loading...";
+    btn.disabled = true;
 
     try {
       const { token } = await login(email, password);
@@ -38,6 +50,8 @@ import Layout from "../layouts/layout.astro";
       window.location.href = "/";
     } catch (err) {
       errorMsg.textContent = err instanceof Error ? err.message : "Login failed";
+      btn.textContent = originalText;
+      btn.disabled = false;
     }
   });
 </script>
