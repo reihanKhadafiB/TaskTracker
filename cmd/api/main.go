@@ -54,13 +54,15 @@ func main() {
 	authHandler := handler.NewAuthHandler(authSvc)
 	authMw := middleware.Auth(authSvc)
 
-	mux := router.New(taskHandler, contextHandler, subtaskHandler, authHandler, authMw)
+	exportHandler := handler.NewExportHandler(contextSvc, taskSvc, subTaskSvc)
 
-	var handler http.Handler = mux
-	handler = middleware.CORS(handler)
+	mux := router.New(taskHandler, contextHandler, subtaskHandler, authHandler, exportHandler, authMw)
+
+	var h http.Handler = mux
+	h = middleware.CORS(h)
 
 	log.Printf("server starting on port %s", port)
-	if err := http.ListenAndServe(":"+port, handler); err != nil {
+	if err := http.ListenAndServe(":"+port, h); err != nil {
 		log.Fatalf("server failed: %v", err)
 	}
 }
