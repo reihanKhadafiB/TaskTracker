@@ -15,7 +15,7 @@ type Task struct {
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
 	Status      string     `json:"status"`
-	DueDate     *time.Time `json:"due_date"`
+	DueDate     *Date      `json:"due_date"`
 	CreatedAt   time.Time  `json:"created_at"`
 	CompletedAt *time.Time `json:"completed_at"`
 }
