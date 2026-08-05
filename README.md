@@ -39,7 +39,7 @@ Make sure you have the following installed on your machine:
 
 ### 1. Clone the Repository
 ```bash
-git clone hhttps://github.com/reihanKhadafiB/TaskTracker.git
+git clone https://github.com/reihanKhadafiB/TaskTracker.git
 cd TaskTracker
 ```
 
