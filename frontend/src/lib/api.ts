@@ -31,9 +31,6 @@ async function apiFetch<T>(path: string, options: ApiOptions = {}): Promise<T> {
 
   return response.json();
 }
-
-// ── Types ──────────────────────────────────────────────
-
 export interface Task {
   id: number;
   context_id: number | null;
@@ -65,9 +62,6 @@ export interface Context {
   color: string;
   created_at: string;
 }
-
-// ── Auth ───────────────────────────────────────────────
-
 export function login(email: string, password: string): Promise<{ token: string }> {
   return apiFetch<{ token: string }>("/auth/login", {
     method: "POST",
@@ -81,9 +75,6 @@ export function register(email: string, password: string): Promise<{ message: st
     body: { email, password },
   });
 }
-
-// ── Tasks ──────────────────────────────────────────────
-
 export function getTasks(token: string, params?: URLSearchParams): Promise<TaskListResponse> {
   const query = params ? `?${params.toString()}` : "";
   return apiFetch<TaskListResponse>(`/tasks${query}`, { token });
@@ -97,6 +88,10 @@ export function createTask(token: string, task: Partial<Task>): Promise<Task> {
   return apiFetch<Task>("/tasks", { method: "POST", body: task, token });
 }
 
+export function updateTask(token: string, id: number, task: Partial<Task>): Promise<void> {
+  return apiFetch<void>(`/tasks/${id}`, { method: "PUT", body: task, token });
+}
+
 export function updateTaskStatus(token: string, id: number, status: string): Promise<void> {
   return apiFetch<void>(`/tasks/${id}/status`, { method: "PATCH", body: { status }, token });
 }
@@ -104,9 +99,6 @@ export function updateTaskStatus(token: string, id: number, status: string): Pro
 export function deleteTask(token: string, id: number): Promise<void> {
   return apiFetch<void>(`/tasks/${id}`, { method: "DELETE", token });
 }
-
-// ── Subtasks ───────────────────────────────────────────
-
 export function createSubtask(token: string, taskId: number, title: string, sortOrder = 0): Promise<Subtask> {
   return apiFetch<Subtask>(`/tasks/${taskId}/subtasks`, {
     method: "POST",
@@ -122,13 +114,48 @@ export function updateSubtaskDone(token: string, taskId: number, subtaskId: numb
     token,
   });
 }
-
-// ── Contexts ───────────────────────────────────────────
-
 export function getContexts(token: string): Promise<Context[]> {
   return apiFetch<Context[]>("/contexts", { token });
 }
 
 export function createContext(token: string, name: string, color: string): Promise<Context> {
   return apiFetch<Context>("/contexts", { method: "POST", body: { name, color }, token });
+}
+
+export function updateContext(token: string, id: number, name: string, color: string): Promise<Context> {
+  return apiFetch<Context>(`/contexts/${id}`, { method: "PUT", body: { name, color }, token });
+}
+
+export function deleteContext(token: string, id: number): Promise<void> {
+  return apiFetch<void>(`/contexts/${id}`, { method: "DELETE", token });
+}
+
+export async function downloadContextPDF(token: string, contextId: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/contexts/${contextId}/export`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Failed to download PDF");
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() => { window.URL.revokeObjectURL(url); }, 1000);
+}
+
+export function getSubtasksByTask(token: string, taskId: number): Promise<Subtask[]> {
+  return apiFetch<Subtask[]>(`/tasks/${taskId}/subtasks`, { token });
+}
+
+export function updateSubtask(token: string, taskId: number, subtaskId: number, title: string): Promise<void> {
+  return apiFetch<void>(`/tasks/${taskId}/subtasks/${subtaskId}`, {
+    method: "PUT",
+    body: { title },
+    token,
+  });
+}
+
+export function deleteSubtask(token: string, taskId: number, subtaskId: number): Promise<void> {
+  return apiFetch<void>(`/tasks/${taskId}/subtasks/${subtaskId}`, {
+    method: "DELETE",
+    token,
+  });
 }
