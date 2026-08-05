@@ -15,9 +15,7 @@ func respondJSON(w http.ResponseWriter, status int, data any) {
 	w.WriteHeader(status)
 	if data != nil {
 		if err := json.NewEncoder(w).Encode(data); err != nil {
-			// Ini terjadi setelah header terkirim, jadi tidak bisa lagi ubah status code.
-			// Cukup log, karena response ke client sudah terlanjur jalan.
-			log.Printf("failed to encode response: %v", err)
+			log.Printf("failed to write error response: %v\n", err)
 		}
 	}
 }

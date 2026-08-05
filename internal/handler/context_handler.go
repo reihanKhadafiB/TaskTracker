@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/username/task-tracker/internal/model"
 	"github.com/username/task-tracker/internal/service"
@@ -46,4 +47,44 @@ func (h *ContextHandler) List(w http.ResponseWriter, r *http.Request) {
 		contexts = []model.Context{}
 	}
 	respondJSON(w, http.StatusOK, contexts)
+}
+
+func (h *ContextHandler) Update(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "invalid context id")
+		return
+	}
+
+	var c model.Context
+	if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
+		respondError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if err := h.contextService.UpdateContext(r.Context(), id, c.Name, c.Color); err != nil {
+		if errors.Is(err, service.ErrContextNameRequired) {
+			respondError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		respondError(w, http.StatusInternalServerError, "failed to update context")
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]string{"message": "context updated"})
+}
+
+func (h *ContextHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "invalid context id")
+		return
+	}
+
+	if err := h.contextService.DeleteContext(r.Context(), id); err != nil {
+		respondError(w, http.StatusInternalServerError, "failed to delete context")
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

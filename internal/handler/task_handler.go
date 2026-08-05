@@ -48,7 +48,7 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 			respondError(w, http.StatusBadRequest, "due_date must be in YYYY-MM-DD format")
 			return
 		}
-		t.DueDate = &parsed
+		t.DueDate = &model.Date{Time: parsed}
 	}
 
 	if err := h.taskService.CreateTask(r.Context(), &t); err != nil {
@@ -159,6 +159,46 @@ func parseTaskFilter(r *http.Request) (model.TaskFilter, error) {
 
 func validStatusFilter(status string) bool {
 	return status == "todo" || status == "in_progress" || status == "done"
+}
+
+func (h *TaskHandler) Update(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "invalid task id")
+		return
+	}
+
+	var req createTaskRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	t := model.Task{
+		ContextID:   req.ContextID,
+		Title:       req.Title,
+		Description: req.Description,
+	}
+
+	if req.DueDate != nil && *req.DueDate != "" {
+		parsed, err := time.Parse("2006-01-02", *req.DueDate)
+		if err != nil {
+			respondError(w, http.StatusBadRequest, "due_date must be in YYYY-MM-DD format")
+			return
+		}
+		t.DueDate = &model.Date{Time: parsed}
+	}
+
+	if err := h.taskService.UpdateTask(r.Context(), id, &t); err != nil {
+		if errors.Is(err, service.ErrTitleRequired) {
+			respondError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		respondError(w, http.StatusInternalServerError, "failed to update task")
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]string{"message": "task updated"})
 }
 
 func (h *TaskHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
