@@ -30,3 +30,15 @@ func (s *ContextService) CreateContext(ctx context.Context, c *model.Context) er
 func (s *ContextService) ListContexts(ctx context.Context) ([]model.Context, error) {
 	return s.contextRepo.List(ctx)
 }
+
+func (s *ContextService) UpdateContext(ctx context.Context, id int, name string, color string) error {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return ErrContextNameRequired
+	}
+	return s.contextRepo.Update(ctx, id, name, color)
+}
+
+func (s *ContextService) DeleteContext(ctx context.Context, id int) error {
+	return s.contextRepo.Delete(ctx, id)
+}

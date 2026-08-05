@@ -55,6 +55,14 @@ func (s *TaskService) ListTasks(ctx context.Context, filter model.TaskFilter) ([
 	return s.taskRepo.List(ctx, filter)
 }
 
+func (s *TaskService) UpdateTask(ctx context.Context, id int, t *model.Task) error {
+	t.Title = strings.TrimSpace(t.Title)
+	if t.Title == "" {
+		return ErrTitleRequired
+	}
+	return s.taskRepo.Update(ctx, id, t)
+}
+
 func (s *TaskService) UpdateTaskStatus(ctx context.Context, id int, status string) error {
 	if !validStatuses[status] {
 		return ErrInvalidStatus

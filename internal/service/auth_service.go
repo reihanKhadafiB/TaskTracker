@@ -51,8 +51,6 @@ func (s *AuthService) Register(ctx context.Context, email, password string) erro
 func (s *AuthService) Login(ctx context.Context, email, password string) (string, error) {
 	user, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil {
-		// Sengaja return error generik yang sama, jangan bedain
-		// "email tidak ditemukan" vs "password salah" (lihat penjelasan di bawah)
 		return "", ErrInvalidCredentials
 	}
 
@@ -88,7 +86,7 @@ func (s *AuthService) ValidateToken(tokenString string) (int, error) {
 		return 0, errors.New("invalid token claims")
 	}
 
-	userIDFloat, ok := claims["user_id"].(float64) // JSON number selalu ke-decode jadi float64
+	userIDFloat, ok := claims["user_id"].(float64)
 	if !ok {
 		return 0, errors.New("invalid user_id in token")
 	}
