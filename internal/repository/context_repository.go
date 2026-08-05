@@ -29,6 +29,30 @@ func (r *ContextRepository) Create(ctx context.Context, c *model.Context) error 
 	return nil
 }
 
+func (r *ContextRepository) Update(ctx context.Context, id int, name string, color string) error {
+	query := `UPDATE contexts SET name = $1, color = $2 WHERE id = $3`
+	tag, err := r.pool.Exec(ctx, query, name, color, id)
+	if err != nil {
+		return fmt.Errorf("failed to update context: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("context with id %d not found", id)
+	}
+	return nil
+}
+
+func (r *ContextRepository) Delete(ctx context.Context, id int) error {
+	query := `DELETE FROM contexts WHERE id = $1`
+	tag, err := r.pool.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete context: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("context with id %d not found", id)
+	}
+	return nil
+}
+
 func (r *ContextRepository) List(ctx context.Context) ([]model.Context, error) {
 	query := `SELECT id, name, color, created_at FROM contexts ORDER BY id ASC`
 

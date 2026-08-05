@@ -115,6 +115,22 @@ func (r *TaskRepository) List(ctx context.Context, filter model.TaskFilter) ([]m
 	return tasks, nil
 }
 
+func (r *TaskRepository) Update(ctx context.Context, id int, t *model.Task) error {
+	query := `
+		UPDATE tasks
+		SET context_id = $1, title = $2, description = $3, due_date = $4
+		WHERE id = $5
+	`
+	tag, err := r.pool.Exec(ctx, query, t.ContextID, t.Title, t.Description, t.DueDate, id)
+	if err != nil {
+		return fmt.Errorf("failed to update task: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("task with id %d not found", id)
+	}
+	return nil
+}
+
 func (r *TaskRepository) UpdateStatus(ctx context.Context, id int, status string, completedAt *string) error {
 	query := `
 		UPDATE tasks

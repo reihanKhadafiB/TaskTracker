@@ -56,6 +56,30 @@ func (r *SubtaskRepository) ListByTaskID(ctx context.Context, taskID int) ([]mod
 	return subtasks, nil
 }
 
+func (r *SubtaskRepository) Update(ctx context.Context, id int, title string) error {
+	query := `UPDATE subtasks SET title = $1 WHERE id = $2`
+	tag, err := r.pool.Exec(ctx, query, title, id)
+	if err != nil {
+		return fmt.Errorf("failed to update subtask: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("subtask with id %d not found", id)
+	}
+	return nil
+}
+
+func (r *SubtaskRepository) Delete(ctx context.Context, id int) error {
+	query := `DELETE FROM subtasks WHERE id = $1`
+	tag, err := r.pool.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete subtask: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("subtask with id %d not found", id)
+	}
+	return nil
+}
+
 func (r *SubtaskRepository) UpdateDone(ctx context.Context, id int, isDone bool) (taskID int, err error) {
 	query := `UPDATE subtasks SET is_done = $1 WHERE id = $2 RETURNING task_id`
 	err = r.pool.QueryRow(ctx, query, isDone, id).Scan(&taskID)
